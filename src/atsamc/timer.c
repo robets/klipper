@@ -15,6 +15,9 @@
 static void
 timer_set(uint32_t value)
 {
+    /*
+     * COUNT32.CCx is write synchronized, but it might not matter here.
+     */
     TC4->COUNT32.CC[0].reg = value;
     TC4->COUNT32.INTFLAG.reg = TC_INTFLAG_MC0;
 }
@@ -23,7 +26,10 @@ timer_set(uint32_t value)
 uint32_t
 timer_read_time(void)
 {
-    return TC4->COUNT32.COUNT.reg;
+    TC4->COUNT32.CTRLBSET.bit.CMD = TC_CTRLBSET_CMD_READSYNC_Val;
+    while (TC4->COUNT32.SYNCBUSY.bit.COUNT)
+        ;
+    return TC4->COUNT32.COUNT.bit.COUNT;
 }
 
 // Activate timer dispatch as soon as possible
@@ -54,12 +60,13 @@ timer_init(void)
     TcCount32 *tc = &TC4->COUNT32;
     irqstatus_t flag = irq_save();
     tc->CTRLA.reg = 0;
-    tc->CTRLA.reg = TC_CTRLA_MODE_COUNT32;
+    tc->CTRLA.bit.MODE = TC_CTRLA_MODE_COUNT32_Val;
+    tc->INTENSET.bit.MC0 = 1;
     armcm_enable_irq(TC4_Handler, TC4_IRQn, 2);
-    tc->INTENSET.reg = TC_INTENSET_MC0;
-    tc->COUNT.reg = 0;
+    tc->COUNT.bit.COUNT = 0;
+    while(tc->SYNCBUSY.bit.COUNT);
     timer_kick();
-    tc->CTRLA.reg = TC_CTRLA_MODE_COUNT32 | TC_CTRLA_ENABLE;
+    tc->CTRLA.bit.ENABLE = 1;
     irq_restore(flag);
 }
 DECL_INIT(timer_init);
