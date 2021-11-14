@@ -80,10 +80,10 @@ class Heater:
             time_diff = read_time - self.last_temp_time
             self.last_temp = temp
             self.last_temp_time = read_time
-            self.control.temperature_update(read_time, temp, self.target_temp)
             temp_diff = temp - self.smoothed_temp
             adj_time = min(time_diff * self.inv_smooth_time, 1.)
             self.smoothed_temp += temp_diff * adj_time
+            self.control.temperature_update(read_time, self.smoothed_temp, self.target_temp)
             self.can_extrude = (self.smoothed_temp >= self.min_extrude_temp)
         #logging.debug("temp: %.3f %f = %f", read_time, temp)
     # External commands
@@ -126,8 +126,9 @@ class Heater:
             last_temp = self.last_temp
             last_pwm_value = self.last_pwm_value
         is_active = target_temp or last_temp > 50.
-        return is_active, '%s: target=%.0f temp=%.1f pwm=%.3f' % (
-            self.name, target_temp, last_temp, last_pwm_value)
+        return is_active, '%s: target=%.0f temp=%.1f smoothed_temp=%.3f pwm=%.3f' % (
+                   self.name, target_temp, last_temp, self.smoothed_temp, last_pwm_value)
+
     def get_status(self, eventtime):
         with self.lock:
             target_temp = self.target_temp
@@ -135,7 +136,9 @@ class Heater:
             last_pwm_value = self.last_pwm_value
         return {'temperature': round(smoothed_temp, 2), 'target': target_temp,
                 'power': last_pwm_value}
+
     cmd_SET_HEATER_TEMPERATURE_help = "Sets a heater temperature"
+
     def cmd_SET_HEATER_TEMPERATURE(self, gcmd):
         temp = gcmd.get_float('TARGET', 0.)
         pheaters = self.printer.lookup_object('heaters')
@@ -179,7 +182,6 @@ class ControlPID:
         self.Kp = config.getfloat('pid_Kp') / PID_PARAM_BASE
         self.Ki = config.getfloat('pid_Ki') / PID_PARAM_BASE
         self.Kd = config.getfloat('pid_Kd') / PID_PARAM_BASE
-        self.min_deriv_time = heater.get_smooth_time()
         self.temp_integ_max = 0.
         if self.Ki:
             self.temp_integ_max = self.heater_max_power / self.Ki
@@ -191,11 +193,8 @@ class ControlPID:
         time_diff = read_time - self.prev_temp_time
         # Calculate change of temperature
         temp_diff = temp - self.prev_temp
-        if time_diff >= self.min_deriv_time:
-            temp_deriv = temp_diff / time_diff
-        else:
-            temp_deriv = (self.prev_temp_deriv * (self.min_deriv_time-time_diff)
-                          + temp_diff) / self.min_deriv_time
+        temp_deriv = temp_diff / time_diff
+
         # Calculate accumulated temperature "error"
         temp_err = target_temp - temp
         temp_integ = self.prev_temp_integ + temp_err * time_diff
