@@ -92,7 +92,7 @@ ResetHandler(void)
 DECL_ARMCM_IRQ(ResetHandler, -15);
 
 // Code called for any undefined interrupts
-void
+_Noreturn void
 DefaultHandler(void)
 {
     for (;;)
@@ -116,4 +116,9 @@ void *
 dynmem_end(void)
 {
     return &_stack_start;
+}
+
+int
+main (void) {
+    ResetHandler();
 }
