@@ -14,6 +14,8 @@
 #include "stm32f4xx.h"
 #elif CONFIG_MACH_STM32H7
 #include "stm32h7xx.h"
+#elif CONFIG_MACH_STM32G0
+#include "stm32g0xx.h"
 #endif
 
 extern GPIO_TypeDef * const digital_regs[];
