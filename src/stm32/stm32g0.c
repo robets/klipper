@@ -168,6 +168,11 @@ armcm_main(void)
     // Set flash latency
     FLASH->ACR = (2<<FLASH_ACR_LATENCY_Pos) | FLASH_ACR_ICEN | FLASH_ACR_PRFTEN;
 
+    if (CONFIG_STM32G0_NBOOT0_SEL_FROM_PIN) {
+        // Set flash option bits to enable nBOOT0 selection.
+        FLASH->OPTR &= ~FLASH_OPTR_nBOOT_SEL & ~FLASH_OPTR_nBOOT1;
+    }
+
     // Configure main clock
     clock_setup();
 

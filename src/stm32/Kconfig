@@ -347,4 +347,7 @@ config CANBUS_FREQUENCY
     int "CAN bus speed" if LOW_LEVEL_OPTIONS && CANSERIAL
     default 500000
 
+config STM32G0_NBOOT0_SEL_FROM_PIN
+    bool "Set nBOOT0 from nBOOT0 pin" if LOW_LEVEL_OPTIONS && MACH_STM32G0
+    default y
 endif
