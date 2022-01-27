@@ -3,7 +3,11 @@
 # Copyright (C) 2019  Stephan Oelze <stephan.oelze@gmail.com>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
+import logging
+import random
+
 from . import tmc2208, tmc2130, tmc, tmc_uart
+import json
 
 TMC_FREQUENCY=12000000.
 
@@ -55,7 +59,16 @@ FieldFormatters = dict(tmc2208.FieldFormatters)
 
 class TMC2209:
     def __init__(self, config):
+        self.printer = config.get_printer()
+        self.reactor = self.printer.get_reactor()
+        self.name = config.get_name().split()[-1]
+
         # Setup mcu communication
+        self.stats_interval = 2.05
+        self.stats_timer = None
+        self.last_stats = ""
+        self.printer.register_event_handler("klippy:ready", self.handle_ready)
+
         self.fields = tmc.FieldHelper(Fields, tmc2208.SignedFields,
                                       FieldFormatters)
         self.mcu_tmc = tmc_uart.MCU_TMC_uart(config, Registers, self.fields, 3)
@@ -70,6 +83,7 @@ class TMC2209:
         cmdhelper.setup_register_dump(ReadRegisters)
         self.get_phase_offset = cmdhelper.get_phase_offset
         self.get_status = cmdhelper.get_status
+        self.cmdhelper = cmdhelper
         # Setup basic register values
         self.fields.set_field("pdn_disable", True)
         self.fields.set_field("mstep_reg_select", True)
@@ -91,6 +105,46 @@ class TMC2209:
         set_config_field(config, "pwm_reg", 8)
         set_config_field(config, "pwm_lim", 12)
         set_config_field(config, "sgthrs", 0)
+        set_config_field(config, "semin", 0)
+        set_config_field(config, "semax", 0)
+        set_config_field(config, "seup", 0)
+        set_config_field(config, "sedn", 0)
+        set_config_field(config, "seimin", 0)
+
+    def handle_ready(self):
+        self.stats_timer = self.reactor.register_timer(self.stats_handler)
+        self.printer.register_event_handler("toolhead:sync_print_time",
+                                            self.handle_sync_print_time)
+
+    def handle_sync_print_time(self, curtime, print_time, est_print_time):
+        self.reactor.update_timer(self.stats_timer, curtime + self.stats_interval + (random.random() - 0.5))
+        pass
+
+    def stats_handler(self, eventtime):
+        if self.printer.is_shutdown():
+            return self.reactor.NEVER
+
+        new_stats = {
+            'stat_type': 'tmc2209',
+            'tmc_name': self.name
+        }
+        for reg_name, val in self.fields.registers.items():
+            if reg_name not in self.cmdhelper.read_registers:
+                new_stats.update(self.fields.get_reg_fields(reg_name, val))
+
+        for reg_name in self.cmdhelper.read_registers:
+            val = self.mcu_tmc.get_register(reg_name)
+            if self.cmdhelper.read_translate is not None:
+                reg_name, val = self.cmdhelper.read_translate(reg_name, val)
+            new_stats.update(self.fields.get_reg_fields(reg_name, val))
+
+        self.last_stats = new_stats
+        return eventtime + self.stats_interval
+
+    def stats(self, eventtime):
+        enabled = self.cmdhelper.stepper_enable.lookup_enable(self.cmdhelper.stepper_name).is_motor_enabled()
+        return enabled, json.dumps(self.last_stats)
 
 def load_config_prefix(config):
     return TMC2209(config)
+

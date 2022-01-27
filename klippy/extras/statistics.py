@@ -65,10 +65,12 @@ class PrinterStats:
     def generate_stats(self, eventtime):
         stats = [cb(eventtime) for cb in self.stats_cb]
         if max([s[0] for s in stats]):
-            logging.info("Stats %.1f: %s", eventtime,
-                         ' '.join([s[1] for s in stats]))
+            for active, stats_string in stats:
+                if active:
+                    logging.info("Stats %.1f: %s", eventtime, stats_string)
         return eventtime + 1.
 
 def load_config(config):
     config.get_printer().add_object('system_stats', PrinterSysStats(config))
     return PrinterStats(config)
+
