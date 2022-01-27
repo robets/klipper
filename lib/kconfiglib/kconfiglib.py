@@ -543,6 +543,8 @@ Feedback
 Send bug reports, suggestions, and questions to ulfalizer a.t Google's email
 service, or open a ticket on the GitHub page.
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import errno
 import importlib
 import os
