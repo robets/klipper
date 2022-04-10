@@ -297,7 +297,7 @@ class PrinterHeaters:
         return {'available_heaters': self.available_heaters,
                 'available_sensors': self.available_sensors}
     def turn_off_all_heaters(self, print_time=0.):
-        for heater in self.heaters.values():
+        for heater in list(self.heaters.values()):
             heater.set_temp(0.)
     cmd_TURN_OFF_HEATERS_help = "Turn off all heaters"
     def cmd_TURN_OFF_HEATERS(self, gcmd):

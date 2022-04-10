@@ -4,7 +4,7 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 
-from __future__ import absolute_import
+
 import sys, os, glob, re, time, logging, six.moves.configparser as configparser, io
 
 error = configparser.Error
@@ -317,10 +317,10 @@ class PrinterConfig:
             for option in section.get_prefix_options(''):
                 section_status[option] = section.get(option, note_valid=False)
         self.status_settings = {}
-        for (section, option), value in config.access_tracking.items():
+        for (section, option), value in list(config.access_tracking.items()):
             self.status_settings.setdefault(section, {})[option] = value
         self.status_warnings = []
-        for (section, option, value), msg in self.deprecated.items():
+        for (section, option, value), msg in list(self.deprecated.items()):
             if value is None:
                 res = {'type': 'deprecated_option'}
             else:

@@ -4,7 +4,7 @@
 # Copyright (C) 2020  Dmitry Butyugin <dmbutyugin@google.com>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import collections
 import chelper
 from . import shaper_defs
@@ -89,7 +89,7 @@ class AxisInputShaper:
         self.saved = None
     def report(self, gcmd):
         info = ' '.join(["%s_%s:%s" % (key, self.axis, value)
-                         for (key, value) in self.params.get_status().items()])
+                         for (key, value) in list(self.params.get_status().items())])
         gcmd.respond_info(info)
 
 class InputShaper:

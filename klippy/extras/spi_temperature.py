@@ -5,7 +5,7 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 
-from __future__ import absolute_import
+
 import math
 from . import bus
 
@@ -340,5 +340,5 @@ Sensors = {
 def load_config(config):
     # Register sensors
     pheaters = config.get_printer().load_object(config, "heaters")
-    for name, klass in Sensors.items():
+    for name, klass in list(Sensors.items()):
         pheaters.add_sensor_factory(name, klass)

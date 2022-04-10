@@ -3,7 +3,7 @@
 # Copyright (C) 2016-2021  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import os, re, logging, collections, shlex
 
 class CommandError(Exception):
@@ -312,7 +312,7 @@ class GCodeDispatch:
         # Get Firmware Version and Capabilities
         software_version = self.printer.get_start_args().get('software_version')
         kw = {"FIRMWARE_NAME": "Klipper", "FIRMWARE_VERSION": software_version}
-        msg = " ".join(["%s:%s" % (k, v) for k, v in kw.items()])
+        msg = " ".join(["%s:%s" % (k, v) for k, v in list(kw.items())])
         did_ack = gcmd.ack(msg)
         if not did_ack:
             gcmd.respond_info(msg)

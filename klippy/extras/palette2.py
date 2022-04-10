@@ -3,7 +3,7 @@
 # Copyright (C) 2021 Clifford Roche <clifford.roche@gmail.com>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import logging
 import os
 import serial
@@ -13,7 +13,7 @@ from serial import SerialException
 try:
     from queue import Queue, Empty
 except ImportError:
-    from Queue import Queue, Empty
+    from queue import Queue, Empty
 
 COMMAND_HEARTBEAT = "O99"
 COMMAND_CUT = "O10 D5"

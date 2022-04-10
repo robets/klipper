@@ -348,7 +348,7 @@ class MenuContainer(MenuElement):
     def update_items(self):
         _a = [(item, name) for item, name in self._allitems
               if item.is_enabled()]
-        self._items, self._names = zip(*_a) or ([], [])
+        self._items, self._names = list(zip(*_a)) or ([], [])
 
     # select methods
     def init_selection(self):
@@ -1057,8 +1057,8 @@ class MenuManager:
     def aslatin(cls, s):
         if isinstance(s, str):
             return s
-        elif isinstance(s, unicode):
-            return unicode(s).encode('latin-1', 'ignore')
+        elif isinstance(s, str):
+            return str(s).encode('latin-1', 'ignore')
         else:
             return str(s)
 

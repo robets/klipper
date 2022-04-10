@@ -3,7 +3,7 @@
 # Copyright (C) 2018-2019  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import logging
 import mathutil
 from . import probe
@@ -160,7 +160,7 @@ class ZTilt:
                 total_error += adjusted_height(pos, params)**2
             return total_error
         new_params = mathutil.coordinate_descent(
-            params.keys(), params, errorfunc)
+            list(params.keys()), params, errorfunc)
         # Apply results
         speed = self.probe_helper.get_lift_speed()
         logging.info("Calculated bed tilt parameters: %s", new_params)

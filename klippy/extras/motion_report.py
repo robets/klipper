@@ -263,7 +263,7 @@ class PrinterMotionReport:
     def _dump_shutdown(self, eventtime):
         # Log stepper queue_steps on mcu that started shutdown (if any)
         shutdown_time = NEVER_TIME
-        for dstepper in self.steppers.values():
+        for dstepper in list(self.steppers.values()):
             mcu = dstepper.mcu_stepper.get_mcu()
             sc = mcu.get_shutdown_clock()
             if not sc:
@@ -277,7 +277,7 @@ class PrinterMotionReport:
         if shutdown_time >= NEVER_TIME:
             return
         # Log trapqs around time of shutdown
-        for dtrapq in self.trapqs.values():
+        for dtrapq in list(self.trapqs.values()):
             data, cdata = dtrapq.extract_trapq(shutdown_time - .100,
                                                shutdown_time + .100)
             dtrapq.log_trapq(data)

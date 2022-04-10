@@ -3,7 +3,7 @@
 # Copyright (C) 2018  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import logging
 import mathutil
 from . import probe
@@ -76,7 +76,7 @@ class BedTiltCalibrate:
                 total_error += adjusted_height(pos, params)**2
             return total_error
         new_params = mathutil.coordinate_descent(
-            params.keys(), params, errorfunc)
+            list(params.keys()), params, errorfunc)
         # Update current bed_tilt calculations
         x_adjust = new_params['x_adjust']
         y_adjust = new_params['y_adjust']

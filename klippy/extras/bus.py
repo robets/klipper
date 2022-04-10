@@ -3,7 +3,7 @@
 # Copyright (C) 2018,2019  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import mcu
 
 def resolve_bus_name(mcu, param, bus):
@@ -18,7 +18,7 @@ def resolve_bus_name(mcu, param, bus):
     ppins = mcu.get_printer().lookup_object("pins")
     mcu_name = mcu.get_name()
     if bus is None:
-        rev_enums = {v: k for k, v in enums.items()}
+        rev_enums = {v: k for k, v in list(enums.items())}
         if 0 not in rev_enums:
             raise ppins.error("Must specify %s on mcu '%s'" % (param, mcu_name))
         bus = rev_enums[0]

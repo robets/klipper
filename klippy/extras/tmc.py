@@ -3,7 +3,7 @@
 # Copyright (C) 2018-2020  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import logging, collections
 import stepper
 
@@ -25,7 +25,7 @@ class FieldHelper:
         self.registers = registers
         if self.registers is None:
             self.registers = collections.OrderedDict()
-        self.field_to_register = { f: r for r, fields in self.all_fields.items()
+        self.field_to_register = { f: r for r, fields in list(self.all_fields.items())
                                    for f in fields }
     def lookup_register(self, field_name, default=None):
         return self.field_to_register.get(field_name, default)
@@ -67,7 +67,7 @@ class FieldHelper:
     def pretty_format(self, reg_name, reg_value):
         # Provide a string description of a register
         reg_fields = self.all_fields.get(reg_name, {})
-        reg_fields = sorted([(mask, name) for name, mask in reg_fields.items()])
+        reg_fields = sorted([(mask, name) for name, mask in list(reg_fields.items())])
         fields = []
         for mask, field_name in reg_fields:
             field_value = self.get_field(field_name, reg_value, reg_name)
@@ -79,7 +79,7 @@ class FieldHelper:
         # Provide fields found in a register
         reg_fields = self.all_fields.get(reg_name, {})
         return {field_name: self.get_field(field_name, reg_value, reg_name)
-                for field_name, mask in reg_fields.items()}
+                for field_name, mask in list(reg_fields.items())}
 
 
 ######################################################################
@@ -200,7 +200,7 @@ class TMCErrorCheck:
         if last_value != self.last_drv_status:
             self.last_drv_status = last_value
             fields = self.fields.get_reg_fields(reg_name, last_value)
-            fields = {n: v for n, v in fields.items() if v}
+            fields = {n: v for n, v in list(fields.items()) if v}
             self.last_status = {'drv_status': fields}
         return self.last_status
 
@@ -244,7 +244,7 @@ class TMCCommandHelper:
                                    desc=self.cmd_SET_TMC_CURRENT_help)
     def _init_registers(self, print_time=None):
         # Send registers
-        for reg_name, val in self.fields.registers.items():
+        for reg_name, val in list(self.fields.registers.items()):
             self.mcu_tmc.set_register(reg_name, val, print_time)
     cmd_INIT_TMC_help = "Initialize TMC stepper driver registers"
     def cmd_INIT_TMC(self, gcmd):
@@ -403,7 +403,7 @@ class TMCCommandHelper:
         logging.info("DUMP_TMC %s", self.name)
         print_time = self.printer.lookup_object('toolhead').get_last_move_time()
         gcmd.respond_info("========== Write-only registers ==========")
-        for reg_name, val in self.fields.registers.items():
+        for reg_name, val in list(self.fields.registers.items()):
             if reg_name not in self.read_registers:
                 gcmd.respond_info(self.fields.pretty_format(reg_name, val))
         gcmd.respond_info("========== Queried registers ==========")

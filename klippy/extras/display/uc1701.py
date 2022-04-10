@@ -62,7 +62,7 @@ class DisplayBase:
         bits_bot = [(bot >> s) & 0xff for s in range(0, 64, 8)]
         return (bytearray(bits_top), bytearray(bits_bot))
     def set_glyphs(self, glyphs):
-        for glyph_name, glyph_data in glyphs.items():
+        for glyph_name, glyph_data in list(glyphs.items()):
             icon = glyph_data.get('icon16x16')
             if icon is not None:
                 top1, bot1 = self._swizzle_bits(icon[0])

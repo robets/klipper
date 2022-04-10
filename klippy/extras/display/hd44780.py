@@ -107,7 +107,7 @@ class HD44780:
         pos = x + ((y & 0x02) >> 1) * self.line_length
         self.text_framebuffers[y & 1][pos:pos+len(data)] = data
     def set_glyphs(self, glyphs):
-        for glyph_name, glyph_data in glyphs.items():
+        for glyph_name, glyph_data in list(glyphs.items()):
             data = glyph_data.get('icon5x8')
             if data is not None:
                 self.icons[glyph_name] = data

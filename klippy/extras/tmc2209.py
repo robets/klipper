@@ -3,7 +3,7 @@
 # Copyright (C) 2019  Stephan Oelze <stephan.oelze@gmail.com>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import logging
 import random
 
@@ -129,7 +129,7 @@ class TMC2209:
             'stat_type': 'tmc2209',
             'tmc_name': self.name
         }
-        for reg_name, val in self.fields.registers.items():
+        for reg_name, val in list(self.fields.registers.items()):
             if reg_name not in self.cmdhelper.read_registers:
                 new_stats.update(self.fields.get_reg_fields(reg_name, val))
 

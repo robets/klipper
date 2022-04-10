@@ -3,7 +3,7 @@
 # Copyright (C) 2020  Lucio Tarantino <lucio.tarantino@gmail.com>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import logging
 from . import bus
 
@@ -91,7 +91,7 @@ class HTU21D:
         self.report_time = config.getint('htu21d_report_time',30,minval=5)
         if self.resolution not in HTU21D_RESOLUTIONS:
             raise config.error("Invalid HTU21D Resolution. Valid are %s"
-                % '|'.join(HTU21D_RESOLUTIONS.keys()))
+                % '|'.join(list(HTU21D_RESOLUTIONS.keys())))
         self.deviceId = config.get('sensor_type')
         self.temp = self.min_temp = self.max_temp = self.humidity = 0.
         self.sample_timer = self.reactor.register_timer(self._sample_htu21d)
@@ -130,8 +130,7 @@ class HTU21D:
             logging.warn("htu21d: Reading deviceId !Checksum error!")
         rdevId = rdevId >> 8
         deviceId_list = list(
-            filter(
-              lambda elem: HTU21D_DEVICES[elem]['id'] == rdevId,HTU21D_DEVICES)
+            [elem for elem in HTU21D_DEVICES if HTU21D_DEVICES[elem]['id'] == rdevId]
             )
         if len(deviceId_list) != 0:
             logging.info("htu21d: Found Device Type %s" % deviceId_list[0])

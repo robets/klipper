@@ -3,7 +3,7 @@
 # Copyright (C) 2016-2021  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import json, zlib, logging
 
 DefaultMessages = {
@@ -104,7 +104,7 @@ class Enumeration:
         self.max_length = pt.max_length
         self.enum_name = enum_name
         self.enums = enums
-        self.reverse_enums = {v: k for k, v in enums.items()}
+        self.reverse_enums = {v: k for k, v in list(enums.items())}
     def encode(self, out, v):
         tv = self.enums.get(v)
         if tv is None:
@@ -130,7 +130,7 @@ def lookup_params(msgformat, enumerations={}):
     argparts = [arg.split('=') for arg in msgformat.split()[1:]]
     for name, fmt in argparts:
         pt = MessageTypes[fmt]
-        for enum_name, enums in enumerations.items():
+        for enum_name, enums in list(enumerations.items()):
             if name == enum_name or name.endswith('_' + enum_name):
                 pt = Enumeration(pt, enum_name, enums)
                 break
@@ -329,7 +329,7 @@ class MessageParser:
             self._error("Unknown command: %s", msgname)
         try:
             argparts = dict(arg.split('=', 1) for arg in parts[1:])
-            for name, value in argparts.items():
+            for name, value in list(argparts.items()):
                 t = mp.name_to_type[name]
                 if t.is_dynamic_string:
                     tval = self._parse_buffer(value)
@@ -352,9 +352,9 @@ class MessageParser:
             self._error("Unable to encode: %s", msgname)
         return cmd
     def fill_enumerations(self, enumerations):
-        for add_name, add_enums in enumerations.items():
+        for add_name, add_enums in list(enumerations.items()):
             enums = self.enumerations.setdefault(add_name, {})
-            for enum, value in add_enums.items():
+            for enum, value in list(add_enums.items()):
                 if type(value) == type(0):
                     # Simple enumeration
                     enums[str(enum)] = value
@@ -370,7 +370,7 @@ class MessageParser:
                 for i in range(count):
                     enums[enum_root + str(start_enum + i)] = start_value + i
     def _init_messages(self, messages, command_tags=[], output_tags=[]):
-        for msgformat, msgtag in messages.items():
+        for msgformat, msgtag in list(messages.items()):
             msgtype = 'response'
             if msgtag in command_tags:
                 msgtype = 'command'
@@ -399,8 +399,8 @@ class MessageParser:
             all_messages = dict(commands)
             all_messages.update(responses)
             all_messages.update(output)
-            self._init_messages(all_messages, commands.values(),
-                                output.values())
+            self._init_messages(all_messages, list(commands.values()),
+                                list(output.values()))
             self.config.update(data.get('config', {}))
             self.version = data.get('version', '')
             self.build_versions = data.get('build_versions', '')

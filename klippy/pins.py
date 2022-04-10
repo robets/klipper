@@ -3,7 +3,7 @@
 # Copyright (C) 2016-2021  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import re
 
 class error(Exception):
@@ -34,7 +34,7 @@ class PinResolver:
         if pin in self.aliases:
             pin = self.aliases[pin]
         self.aliases[alias] = pin
-        for existing_alias, existing_pin in self.aliases.items():
+        for existing_alias, existing_pin in list(self.aliases.items()):
             if existing_pin == alias:
                 self.aliases[existing_alias] = pin
     def update_command(self, cmd):

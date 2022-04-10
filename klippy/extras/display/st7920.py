@@ -76,7 +76,7 @@ class DisplayBase:
         base_icon = self.icons.get(base_glyph_name)
         if icon is None or base_icon is None:
             return
-        all_bits = zip(icon[0], icon[1], base_icon[0], base_icon[1])
+        all_bits = list(zip(icon[0], icon[1], base_icon[0], base_icon[1]))
         for i, (ic1, ic2, b1, b2) in enumerate(all_bits):
             x1, x2 = ic1 ^ b1, ic2 ^ b2
             pos = glyph_id*32 + i*2
@@ -84,7 +84,7 @@ class DisplayBase:
             self.all_framebuffers[1][1][pos:pos+2] = [x1 ^ 1, x2 ^ 1]
         self.cached_glyphs[glyph_name] = (base_glyph_name, (0, glyph_id*2))
     def set_glyphs(self, glyphs):
-        for glyph_name, glyph_data in glyphs.items():
+        for glyph_name, glyph_data in list(glyphs.items()):
             icon = glyph_data.get('icon16x16')
             if icon is not None:
                 self.icons[glyph_name] = icon

@@ -3,7 +3,7 @@
 # Copyright (C) 2017-2019  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import logging, os
 import pins, mcu
 from . import bus
@@ -203,7 +203,7 @@ class Replicape:
                 prefix + 'current', above=0., maxval=REPLICAPE_MAX_CURRENT)
             self.stepper_dacs[channel] = cur / REPLICAPE_MAX_CURRENT
             self.pins[prefix + 'enable'] = (ReplicapeDACEnable, channel)
-        self.enabled_channels = {ch: False for cl, ch in self.pins.values()}
+        self.enabled_channels = {ch: False for cl, ch in list(self.pins.values())}
         self.sr_disabled = list(reversed(shift_registers))
         if [i for i in [0, 1, 2] if 11+i in self.stepper_dacs]:
             # Enable xyz steppers
@@ -235,7 +235,7 @@ class Replicape:
             return
         self.enabled_channels[channel] = is_enable
         # Check if need to set the pca9685 enable pin
-        on_channels = [1 for c, e in self.enabled_channels.items() if e]
+        on_channels = [1 for c, e in list(self.enabled_channels.items()) if e]
         if not on_channels:
             self.mcu_pwm_enable.set_digital(print_time, 0)
         elif is_enable and len(on_channels) == 1:
@@ -243,7 +243,7 @@ class Replicape:
         # Check if need to set the stepper enable lines
         if channel not in self.stepper_dacs:
             return
-        on_dacs = [1 for c in self.stepper_dacs.keys()
+        on_dacs = [1 for c in list(self.stepper_dacs.keys())
                    if self.enabled_channels[c]]
         if not on_dacs:
             sr = self.sr_disabled

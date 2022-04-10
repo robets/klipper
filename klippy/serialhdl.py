@@ -3,7 +3,7 @@
 # Copyright (C) 2016-2021  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import logging, threading, os
 import serial
 
@@ -213,7 +213,7 @@ class SerialReader:
         if self.serial_dev is not None:
             self.serial_dev.close()
             self.serial_dev = None
-        for pn in self.pending_notifications.values():
+        for pn in list(self.pending_notifications.values()):
             pn.complete(None)
         self.pending_notifications.clear()
     def stats(self, eventtime):

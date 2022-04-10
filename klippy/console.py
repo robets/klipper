@@ -4,7 +4,7 @@
 # Copyright (C) 2016-2021  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import sys, optparse, os, re, logging
 import util, reactor, serialhdl, pins, msgproto, clocksync
 
@@ -70,7 +70,7 @@ class KeyboardReader:
         self.output("Loaded %d commands (%s / %s)"
                     % (message_count, version, build_versions))
         self.output("MCU config: %s" % (" ".join(
-            ["%s=%s" % (k, v) for k, v in msgparser.get_constants().items()])))
+            ["%s=%s" % (k, v) for k, v in list(msgparser.get_constants().items())])))
         self.clocksync.connect(self.ser)
         self.ser.handle_default = self.handle_default
         self.ser.register_response(self.handle_output, '#output')

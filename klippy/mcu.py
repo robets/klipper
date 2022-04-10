@@ -3,7 +3,7 @@
 # Copyright (C) 2016-2021  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import sys, os, zlib, logging, math
 import serialhdl, msgproto, pins, chelper, clocksync
 
@@ -718,7 +718,7 @@ class MCU:
             "Loaded MCU '%s' %d commands (%s / %s)"
             % (self._name, message_count, version, build_versions),
             "MCU '%s' config: %s" % (self._name, " ".join(
-                ["%s=%s" % (k, v) for k, v in self.get_constants().items()]))]
+                ["%s=%s" % (k, v) for k, v in list(self.get_constants().items())]))]
         return "\n".join(log_info)
     def _connect(self):
         config_params = self._send_get_config()
@@ -781,7 +781,7 @@ class MCU:
         logging.info(self._log_info())
         ppins = self._printer.lookup_object('pins')
         pin_resolver = ppins.get_pin_resolver(self._name)
-        for cname, value in self.get_constants().items():
+        for cname, value in list(self.get_constants().items()):
             if cname.startswith("RESERVE_PINS_"):
                 for pin in value.split(','):
                     pin_resolver.reserve_pin(pin, cname[13:])
@@ -985,7 +985,7 @@ or in response to an internal error in the host software.""",
 }
 
 def error_help(msg):
-    for prefixes, help_msg in Common_MCU_errors.items():
+    for prefixes, help_msg in list(Common_MCU_errors.items()):
         for prefix in prefixes:
             if msg.startswith(prefix):
                 return help_msg

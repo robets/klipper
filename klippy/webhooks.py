@@ -3,7 +3,7 @@
 # Copyright (C) 2020 Eric Callahan <arksine.code@gmail.com>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license
-from __future__ import absolute_import
+
 import logging, socket, os, sys, errno, json, collections
 import gcode
 import six
@@ -16,6 +16,8 @@ REQUEST_LOG_SIZE = 20
 #
 # https://stackoverflow.com/questions/956867/
 #
+# Alternatively, handle awful string handling where the it is a problem.
+# let everything else enjoy normal multi-byte strings as natively supported.
 
 # Latest version commented out for Python2, Python3 version enabled
 #  below -- needs confirmation: KP
@@ -31,15 +33,6 @@ REQUEST_LOG_SIZE = 20
 #            return {json_loads_byteify(k, True): json_loads_byteify(v, True)
 #                    for k, v in data.items()}
 #        return data
-def byteify(data, ignore_dicts=False):
-    if isinstance(data, six.text_type):
-        return data.encode('utf-8')
-    if isinstance(data, list):
-        return [byteify(i, True) for i in data]
-    if isinstance(data, dict) and not ignore_dicts:
-        return {byteify(k, True): byteify(v, True)
-                for k, v in data.items()}
-    return data
 #
 ##
 
@@ -59,13 +52,15 @@ class WebRequest:
     error = WebRequestError
     def __init__(self, client_conn, request):
         self.client_conn = client_conn
-        base_request = json.loads(request, object_hook=json_loads_byteify)
+        base_request = json.loads(request)
         if type(base_request) != dict:
             raise ValueError("Not a top-level dictionary")
         self.id = base_request.get('id', None)
         self.method = base_request.get('method')
         self.params = base_request.get('params', {})
         if type(self.method) != str or type(self.params) != dict:
+            logging.error(repr(base_request))
+            logging.error(f"type(self.method) = {type(self.method)}, type(self.params) = {type(self.params)}")
             raise ValueError("Invalid request type")
         self.response = None
         self.is_error = False
@@ -163,7 +158,7 @@ class ServerSocket:
                 pass
 
     def _handle_shutdown(self):
-        for client in self.clients.values():
+        for client in list(self.clients.values()):
             client.dump_request_log()
 
     def _remove_socket_file(self, file_path):
@@ -398,7 +393,7 @@ class WebHooks:
                 "Remote method '%s' not registered" % (method))
         conn_map = self._remote_methods[method]
         valid_conns = {}
-        for conn, template in conn_map.items():
+        for conn, template in list(conn_map.items()):
             if not conn.is_closed():
                 valid_conns[conn] = template
                 out = {'params': kwargs}
@@ -482,7 +477,7 @@ class QueryStatusHelper:
                 continue
             # Query each requested printer object
             cquery = {}
-            for obj_name, req_items in subscription.items():
+            for obj_name, req_items in list(subscription.items()):
                 res = query.get(obj_name, None)
                 if res is None:
                     po = self.printer.lookup_object(obj_name, None)
@@ -517,8 +512,9 @@ class QueryStatusHelper:
     def _handle_query(self, web_request, is_subscribe=False):
         objects = web_request.get_dict('objects')
         # Validate subscription format
-        for k, v in objects.items():
+        for k, v in list(objects.items()):
             if type(k) != str or (v is not None and type(v) != list):
+                logging.error(f"type(k) = {type(k)}, v = {v}, type(v) = {type(v)}")
                 raise web_request.error("Invalid argument")
             if v is not None:
                 for ri in v:

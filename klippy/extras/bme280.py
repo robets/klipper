@@ -3,7 +3,7 @@
 # Copyright (C) 2020  Eric Callahan <arksine.code@gmail.com>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import logging
 from . import bus
 
@@ -190,7 +190,7 @@ class BME280:
             return dig
 
         chip_id = self.read_id()
-        if chip_id not in BME_CHIPS.keys():
+        if chip_id not in list(BME_CHIPS.keys()):
             logging.info("bme280: Unknown Chip ID received %#x" % chip_id)
         else:
             self.chip_type = BME_CHIPS[chip_id]
@@ -438,11 +438,11 @@ class BME280:
         else:
             factor = 0
             while duration_ms > 0x3F:
-                duration_ms /= 4
+                duration_ms //= 4
                 factor += 1
             duration_reg = duration_ms + (factor * 64)
 
-        return duration_reg
+        return int(duration_reg)
 
     def read_id(self):
         # read chip id register

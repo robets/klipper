@@ -3,7 +3,7 @@
 # Copyright (C) 2017-2019  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from __future__ import absolute_import
+
 import math, logging, collections
 import mathutil
 from . import probe
@@ -46,8 +46,8 @@ def measurements_to_distances(measured_params, delta_params):
         od - opw
         for od, opw in zip(mp['OUTER_DISTS'], mp['OUTER_PILLAR_WIDTHS']) ]
     # Convert angles in degrees to an XY multiplier
-    obj_angles = map(math.radians, MeasureAngles)
-    xy_angles = list(zip(map(math.cos, obj_angles), map(math.sin, obj_angles)))
+    obj_angles = list(map(math.radians, MeasureAngles))
+    xy_angles = list(zip(list(map(math.cos, obj_angles)), list(map(math.sin, obj_angles))))
     # Calculate stable positions for center measurements
     inner_ridge = MeasureRidgeRadius * scale
     inner_pos = [(ax * inner_ridge, ay * inner_ridge, 0.)
@@ -264,7 +264,7 @@ class DeltaCalibrate:
         # Parse distance measurements
         args = {'CENTER_DISTS': 6, 'CENTER_PILLAR_WIDTHS': 3,
                 'OUTER_DISTS': 6, 'OUTER_PILLAR_WIDTHS': 6, 'SCALE': 1}
-        for name, count in args.items():
+        for name, count in list(args.items()):
             data = gcmd.get(name, None)
             if data is None:
                 continue
